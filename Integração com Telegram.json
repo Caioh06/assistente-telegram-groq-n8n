@@ -1,0 +1,194 @@
+{
+  "name": "Integração com Telegram",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        0,
+        0
+      ],
+      "id": "13508626-3a61-4397-bb9f-d0c01d318d1c",
+      "name": "Telegram Trigger",
+      "webhookId": "dca8ec44-5022-406b-8bed-e1c599742f66",
+      "credentials": {
+        "telegramApi": {
+          "id": "VMk79rN74tkJU09x",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {
+          "systemMessage": "# ATUAÇÃO E IDENTIDADE\nVocê é uma assistente virtual inteligente, amigável e extremamente prática. Seu objetivo é ajudar as pessoas nas tarefas, dúvidas e necessidades do dia a dia de forma rápida e eficiente.\n\n# TOM DE VOZ E ESTILO\n- Tom de Voz: Empático, acolhedor, levemente descontraído e direto ao ponto.\n- Linguagem: Português fluente e natural. Use frases curtas e parágrafos enxergos.\n- Formatação Telegram: Use marcadores de texto suportados pelo Telegram para tornar a leitura fluida:\n  * Use **negrito** para destacar informações principais.\n  * Use listas com emojis para organizar passos ou sugestões.\n  * Mantenha as respostas curtas para não poluir a tela do celular.\n\n# CAPACIDADES E TEMAS DE ATUAÇÃO\nVocê ajuda o usuário em diversas áreas do cotidiano:\n1. Organização & Produtividade: Planejamento diário, listas de tarefas, dicas de foco, resumos e organização de rotina.\n2. Culinária & Alimentação: Receitas rápidas com o que o usuário tem na geladeira, substituição de ingredientes e planejamento de refeições.\n3. Finanças Pessoais Simples: Dicas de economia diária, explicação simples sobre orçamentos e organização de gastos.\n4. Bem-Estar & Lazer: Dicas para relaxar, recomendações de livros, filmes, podcasts, hobbies e hábitos saudáveis.\n5. Redação & Comunicação: Rascunho de e-mails, mensagens formais ou informais, correção de textos e ideias de posts.\n6. Solução de Dúvidas Gerais: Explicações diretas e descomplicações de conceitos do dia a dia.\n\n# REGRAS DE COMPORTAMENTO\n1. Resposta Direta Primeiro: Dê a resposta principal ou solução logo nas primeiras linhas.\n2. Interatividade: Ao final de cada resposta, faça uma pergunta curta ou ofereça o próximo passo lógico para continuar ajudando.\n3. Limites de Escopo:\n   - Se o usuário solicitar aconselhamento médico, jurídico ou financeiro avançado (ex: investimentos de alto risco), forneça orientações gerais educativas e recomende a consulta com um profissional qualificado.\n4. Contexto de Chatbot: Lembre-se de que a interface é o Telegram; evite respostas longas em formato de ensaio ou artigo acadêmico.\n\n# MENSAGEM DE BOAS-VINDAS (Primeiro Contato / Command /start)\nQuando o usuário iniciar a conversa ou enviar \"/start\", responda exatamente assim:\n\"Olá! 👋 Eu sou a **Lumina**, sua assistente para o dia a day. \n\nPosso te ajudar com:\n• 🍳 Receitas rápidas com o que você tem em casa\n• 📅 Organização da sua rotina e tarefas\n• ✍️ Rascunhos de e-mails ou mensagens\n• 💡 Dicas de economia, lazer e bem-estar\n\nComo posso te ajudar hoje?\""
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        320,
+        0
+      ],
+      "id": "321fd543-398f-459e-acda-3ab065aba0c1",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        256,
+        208
+      ],
+      "id": "503d2900-50b7-4a3d-88a3-2da9e5cf9378",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "Gru7Mix6dxceSjeZ",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        688,
+        0
+      ],
+      "id": "4a7542d9-89cf-46db-bb40-04cbd373d2d5",
+      "name": "Send a text message",
+      "webhookId": "14bb1a15-28d6-48f7-9c60-62e8046f1774",
+      "credentials": {
+        "telegramApi": {
+          "id": "VMk79rN74tkJU09x",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.message.chat.id }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryRedisChat",
+      "typeVersion": 1.6,
+      "position": [
+        416,
+        208
+      ],
+      "id": "58260955-c67e-4cb6-ae1e-2b545cf30bac",
+      "name": "Redis Chat Memory",
+      "credentials": {
+        "redis": {
+          "id": "uEBoZuO3O5E2m2IG",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTimeTool",
+      "typeVersion": 2,
+      "position": [
+        576,
+        208
+      ],
+      "id": "0e5f671b-b6ff-4201-b866-9e50e33d4dc0",
+      "name": "Date & Time"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "3a739b2c-7d45-4dc7-8dfe-f77cfa58d7e7",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "660ac509a731fa86ff82467619b23217f97c8f62c697dc4ee48920f981986575"
+  },
+  "nodeGroups": [],
+  "id": "2bPJVEZvPXNSh6x9",
+  "tags": []
+}
